@@ -20,6 +20,9 @@ def foreign_key(field):
     else:
         parent_model = field.related_model
 
+    if isinstance(parent_model, str):
+        from django.apps import apps
+        parent_model = apps.get_model(parent_model)
     target = parent_model._meta
     target_table = target.db_table
     target_pk = target.pk.column

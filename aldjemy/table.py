@@ -67,16 +67,13 @@ def generate_tables(metadata):
         if name in metadata.tables or model._meta.proxy:
             continue
         columns = []
-        if django.VERSION < (1, 9):
-            model_fields = model._meta.get_fields_with_model()
-        else:
-            model_fields = [
-                (f, f.model if f.model != model else None)
-                for f in model._meta.get_fields()
-                if not f.is_relation
-                    or f.one_to_one
-                    or (f.many_to_one and f.related_model)
-            ]
+        model_fields = [
+            (f, f.model if f.model != model else None)
+            for f in model._meta.get_fields()
+            if not f.is_relation
+                or f.one_to_one
+                or (f.many_to_one and f.related_model)
+        ] if django.VERSION > (1, 7) else model._meta.get_fields_with_model()
         for field, parent_model in model_fields:
             if parent_model:
                 continue
@@ -84,7 +81,11 @@ def generate_tables(metadata):
             try:
                 internal_type = field.get_internal_type()
             except AttributeError:
-                continue
+                if f.one_to_one:
+                    internal_type = 'OneToOneField'
+                else:
+                    print 'Field mapping error:', f
+                    continue
 
             if internal_type in DATA_TYPES and hasattr(field, 'column'):
                 typ = DATA_TYPES[internal_type](field)

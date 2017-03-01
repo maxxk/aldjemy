@@ -14,7 +14,10 @@ def varchar(field):
 
 def foreign_key(field):
     if django.VERSION < (1, 8):
-        parent_model = field.related.parent_model
+        try:
+            parent_model = field.related.parent_model
+        except:
+            parent_model = field.rel.to
     elif django.VERSION < (1, 9):
         parent_model = field.related.model
     else:

@@ -1,6 +1,5 @@
 import warnings
 from sqlalchemy import orm
-from sqlalchemy.orm import column_property
 import django
 from django.db.models.fields.related import (ForeignKey, OneToOneField,
         ManyToManyField)
@@ -42,9 +41,6 @@ def _extract_model_attrs(model, sa_models):
              if isinstance(t, (ForeignKey, OneToOneField))]
     attrs = {}
     rel_fields = fks + list(model._meta.many_to_many)
-    data_fields = [t for t in model._meta.fields if not isinstance(t, (ForeignKey, OneToOneField))]
-    for f in data_fields:
-        attrs[f.name] = column_property(table.c[f.column])
     for fk in rel_fields:
         if not fk.column in table.c and not isinstance(fk, ManyToManyField):
             continue

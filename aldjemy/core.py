@@ -50,6 +50,9 @@ def get_engine_string(alias):
 def get_connection_string(alias='default'):
     engine = SQLALCHEMY_ENGINES[get_engine_string(alias)]
     options = '?charset=utf8' if engine == 'mysql' else ''
+    sett = connections[alias].settings_dict
+    if engine == 'oracle':
+        options = '{}:{}@{}:{}/{}'.format(sett['USER'], sett['PASSWORD'], sett['HOST'], sett['PORT'], sett['NAME'])
     return engine + '://' + options
 
 
@@ -62,9 +65,7 @@ def get_engine(alias='default'):
         if engine_string == 'sqlite3':
             kw['native_datetime'] = True
 
-        pool = DjangoPool(alias=alias, creator=None)
-        Cache.engines[alias] = create_engine(get_connection_string(alias),
-                                             pool=pool, **kw)
+        Cache.engines[alias] = create_engine(get_connection_string(alias), **kw)
     return Cache.engines[alias]
 
 

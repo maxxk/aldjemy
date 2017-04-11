@@ -44,9 +44,14 @@ def _extract_model_attrs(model, sa_models):
     rel_fields = fks + list(model._meta.many_to_many)
     data_fields = [t for t in model._meta.fields if not isinstance(t, (ForeignKey, OneToOneField))]
     for f in data_fields:
-        attrs[f.name] = column_property(table.c[f.column])
+        try:
+            attrs[f.name] = column_property(table.c[f.column])
+        except KeyError:
+            print "Error: %s" % f.name
 
     for fk in rel_fields:
+        if fk.name in attrs:
+            continue
         if not fk.column in table.c and not isinstance(fk, ManyToManyField):
             continue
 
@@ -70,6 +75,7 @@ def _extract_model_attrs(model, sa_models):
             backref = model._meta.object_name.lower()
             if not isinstance(fk, OneToOneField):
                 backref = backref + '_set'
+        backref = None
         kw = {}
         if isinstance(fk, ManyToManyField):
             model_pk = model._meta.pk.column

@@ -75,7 +75,8 @@ def _extract_model_attrs(model, sa_models):
             backref = model._meta.object_name.lower()
             if not isinstance(fk, OneToOneField):
                 backref = backref + '_set'
-        backref = None
+        if backref in p_table.c or model._meta.proxy:
+            backref = None
         kw = {}
         if isinstance(fk, ManyToManyField):
             model_pk = model._meta.pk.column
@@ -116,7 +117,7 @@ def prepare_models():
         sa_models_by_table_names = getattr(Cache, 'models', {})
 
     for model in models:
-
+        
         table_name = model._meta.db_table
         mixin = getattr(model, 'aldjemy_mixin', None)
         bases = (mixin, BaseSQLAModel) if mixin else (BaseSQLAModel, )
@@ -132,6 +133,8 @@ def prepare_models():
         sa_models_by_django_models[model] = sa_model
 
     for model in models:
+        if hasattr(model, 'sa'):
+            continue
         sa_model = sa_models_by_django_models[model]
         table = tables[model._meta.db_table]
         attrs = _extract_model_attrs(model, sa_models_by_django_models)

@@ -59,10 +59,9 @@ def _extract_model_attrs(model, sa_models):
             parent_model = fk.related.parent_model
         else:
             parent_model = get_remote_field(fk).model
-            if isinstance(m, str):
-                from django.apps import apps
-                m = apps.get_model(m)
 
+        if parent_model._meta.proxy:
+            parent_model = parent_model.__bases__[0]
         parent_model_meta = parent_model._meta
 
         p_table = tables[parent_model_meta.db_table]

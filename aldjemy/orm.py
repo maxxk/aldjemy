@@ -116,7 +116,7 @@ def prepare_models():
         sa_models_by_table_names = getattr(Cache, 'models', {})
 
     for model in models:
-        
+
         table_name = model._meta.db_table
         mixin = getattr(model, 'aldjemy_mixin', None)
         bases = (mixin, BaseSQLAModel) if mixin else (BaseSQLAModel, )
